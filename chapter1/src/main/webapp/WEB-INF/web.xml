@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- metadata-complete属性如果为true,意味着容器将只会读取web.xml，而忽略掉所有Servlet3.0的注解；
+如果不配置该属性，或者将其设置为false，则表示启动标注支持。-->
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" 
+metadata-complete="false" version="3.1">
+  <display-name>Chapter1</display-name>
+  <servlet>
+  	<servlet-name>TestServlet</servlet-name>
+  	<servlet-class>com.lemon.smartwebapp.chapter1.servlet.TestServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>TestServlet</servlet-name>
+  	<url-pattern>/TestServlet</url-pattern>
+  </servlet-mapping>
+</web-app>
