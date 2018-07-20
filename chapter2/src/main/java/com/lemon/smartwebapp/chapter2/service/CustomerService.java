@@ -96,13 +96,14 @@ public class CustomerService {
 		int result = 0;
 		try {
 			conn = DBCPUtil.getConnection();
-			String sql = "update customer set name = ?,contact = ?,telephone = ?,email = ?,remark= ?";
+			String sql = "update customer set name = ?,contact = ?,telephone = ?,email = ?,remark= ? where id = ?";
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, customer.getName());
 			ps.setString(2, customer.getContact());
 			ps.setString(3, customer.getTelephone());
 			ps.setString(4, customer.getEmail());
 			ps.setString(5, customer.getRemark());
+			ps.setLong(6, customer.getId());
 			result =ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();

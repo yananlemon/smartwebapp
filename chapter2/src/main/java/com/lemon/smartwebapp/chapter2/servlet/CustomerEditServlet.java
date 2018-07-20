@@ -1,6 +1,7 @@
 package com.lemon.smartwebapp.chapter2.servlet;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,13 +28,37 @@ public class CustomerEditServlet extends HttpServlet {
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		Enumeration<String> keys = req.getParameterNames();
+		while(keys.hasMoreElements()){
+			System.out.println(keys.nextElement());
+		}
 		CustomerService service = new CustomerService();
+		long id = Long.parseLong(req.getParameter("id"));
 		String name = req.getParameter("name");
 		String contact = req.getParameter("contact");
 		String telephone = req.getParameter("telephone");
 		String email = req.getParameter("email");
 		String remark = req.getParameter("remark");
-		Customer customer = new Customer(name, contact, telephone, email, remark);
+		Customer customer = new Customer(id,name, contact, telephone, email, remark);
+		int result = service.updateCustomer(customer);
+		if(result == 1){
+			req.setAttribute("flag", "1");
+			resp.sendRedirect("/customer_list");
+		}else{
+			resp.sendRedirect("/WEB-INF/jsp/500.jsp");
+		}
+	}
+	
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		CustomerService service = new CustomerService();
+		long id = Long.parseLong(req.getParameter("id"));
+		String name = req.getParameter("name");
+		String contact = req.getParameter("contact");
+		String telephone = req.getParameter("telephone");
+		String email = req.getParameter("email");
+		String remark = req.getParameter("remark");
+		Customer customer = new Customer(id,name, contact, telephone, email, remark);
 		int result = service.updateCustomer(customer);
 		if(result == 1){
 			req.setAttribute("flag", "1");

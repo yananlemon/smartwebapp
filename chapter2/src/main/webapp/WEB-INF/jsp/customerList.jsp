@@ -35,16 +35,34 @@
 			</thead>
 			<tbody>
 				<c:forEach items="${customers }" var="obj">
-					<td>${obj.name}</td>
-					<td>${obj.contact}</td>
-					<td>${obj.telephone }</td>
-					<td>${obj.email }</td>
-					<td>${obj.remark }</td>	
-					<td><a href="customer_get?id=${obj.id }">编辑</a></td>
+					<tr>
+						<td>${obj.name}</td>
+						<td>${obj.contact}</td>
+						<td>${obj.telephone }</td>
+						<td>${obj.email }</td>
+						<td>${obj.remark }</td>	
+						<td><a href="customer_get?id=${obj.id }">编辑</a></td>
+					</tr>
 				</c:forEach>
 			</tbody>
 		</table>
 	</div>
+	<a href="customer_preAdd" class="btn btn-primary"/>新增</a>
 	
 </body>
+<script type="text/javascript">
+$(document).ready(function(){
+  	
+	$("#goAddCustomerBtn").bind("click",function(){
+		$.ajax({
+            url:"customer_preAdd",
+            type:"GET",
+            success:function(result){
+                alert(result);
+            }
+        })
+	});
+
+});
+</script>
 </html>

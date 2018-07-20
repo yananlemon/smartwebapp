@@ -21,39 +21,38 @@
 <title>客户编辑</title>
 </head>
 <body>
-	<form id="customerForm" class="form-horizontal">
+	<form id="customerForm" class="form-horizontal" method="post" action="customer_create">
 		<div class="form-group">
 		    <label for="name" class="col-sm-2 control-label">姓名</label>
 		    <div class="col-sm-10">
-		      <input type="text" class="form-control" id="name" name = "name" value=${customer.name}>
+		      <input type="text" class="form-control" id="name" name = "name"/>
 		    </div>
 	  	</div>
 	  	<div class="form-group">
 		    <label for="contact" class="col-sm-2 control-label">联系人</label>
 		    <div class="col-sm-10">
-		      <input type="text" class="form-control" id="contact" name = "contact"  value=${customer.contact}>
+		      <input type="text" class="form-control" id="contact" name = "contact"/>
 		    </div>
 	  	</div>
 	  	<div class="form-group">
 		    <label for="telephone" class="col-sm-2 control-label">联系电话</label>
 		    <div class="col-sm-10">
-		      <input type="text" class="form-control" id="telephone" name = "telephone"  value=${customer.telephone}>
+		      <input type="text" class="form-control" id="telephone" name = "telephone"/>
 		    </div>
 	  	</div>
 	  	<div class="form-group">
 		    <label for="email" class="col-sm-2 control-label">电子邮件</label>
 		    <div class="col-sm-10">
-		      <input type="email" class="form-control" id="email" name = "email"  value=${customer.email}>
+		      <input type="email" class="form-control" id="email" name = "email"/>
 		    </div>
 	  	</div>
 	  	<div class="form-group">
 		    <label for="remark" class="col-sm-2 control-label">备注</label>
 		    <div class="col-sm-10">
-		      <input type="text" class="form-control" id="remark" name = "remark"  value=${customer.remark}>
+		      <input type="text" class="form-control" id="remark" name = "remark"/>
 		    </div>
 	  	</div>
-	  	<input id ="id" name = "id" type="hidden" value = "${customer.id }"/>
-	  	<input type = "button" id = "saveBtn" class="btn btn-primary" value = "保存"/>
+	  	<input type = "submit" id = "saveBtn" class="btn btn-primary" value = "保存"/>
 	  	<button type="button" class="btn btn-default">取消</button>
 	</form>
 	
@@ -61,7 +60,7 @@
 <script type="text/javascript">
 $(document).ready(function(){
   	
-	$("#saveBtn").bind("click",function(){
+	/* $("#saveBtn").bind("click",function(){
 		$.ajax({
             url:"customer_edit",
             type:"POST",
@@ -70,7 +69,7 @@ $(document).ready(function(){
                 alert(result);
             }
         })
-	});
+	}); */
 	
   
 });

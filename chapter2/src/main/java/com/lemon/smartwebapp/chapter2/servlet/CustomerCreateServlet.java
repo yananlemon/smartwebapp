@@ -29,6 +29,7 @@ public class CustomerCreateServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+    @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		CustomerService service = new CustomerService();
 		String name = request.getParameter("name");
@@ -40,7 +41,7 @@ public class CustomerCreateServlet extends HttpServlet {
 		int result = service.createCustomer(customer);
 		if(result == 1){
 			request.setAttribute("flag", "1");
-			response.sendRedirect("/customer_list");
+			response.sendRedirect("customer_list");
 		}else{
 			response.sendRedirect("/WEB-INF/jsp/500.jsp");
 		}
