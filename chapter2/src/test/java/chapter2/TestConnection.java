@@ -11,7 +11,7 @@ import com.lemon.smartwebapp.chapter2.util.DBCPUtil;
 public class TestConnection {
 	
 	@Test
-	public void intit() {
+	public void testConnection() {
 		try {
 			Assert.assertNotNull(DBCPUtil.getConnection());
 		} catch (SQLException e) {
