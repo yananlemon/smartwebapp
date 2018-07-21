@@ -1,12 +1,14 @@
-package com.lemon.smartwebframework.core;
+package com.lemon.smartwebframework.core.init;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.lemon.smartwebframework.core.Handler;
 import com.lemon.smartwebframework.core.annotation.Controller;
 import com.lemon.smartwebframework.core.annotation.RequestMapping;
+import com.lemon.smartwebframework.core.request.Request;
 
 /**
  * 控制器帮助类
@@ -40,7 +42,6 @@ public class ControllerHelper {
 					String methodType = rm.method();
 					Request req = new Request(methodType, controller.value() + path);
 					Handler handler = new Handler(controllerClass, method);
-					System.out.println("加载"+req);
 					ACTION_MAP.put(req, handler);
 				}
 				

@@ -1,9 +1,11 @@
 package com.lemon.smartwebframework.core.servlet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -14,8 +16,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.lemon.smartwebframework.core.ControllerHelper;
+import com.alibaba.fastjson.JSON;
 import com.lemon.smartwebframework.core.Handler;
+import com.lemon.smartwebframework.core.init.ControllerHelper;
+import com.lemon.smartwebframework.core.request.Data;
+import com.lemon.smartwebframework.core.request.Param;
+import com.lemon.smartwebframework.core.request.View;
 import com.lemon.smartwebframework.util.ReflectionUtil;
 
 /**
@@ -43,7 +49,7 @@ public class MainServlet extends HttpServlet{
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// 获取请求方法和请求路径
-		//String requestPath    = request.getPathInfo();// /customer/welcome
+		request.setCharacterEncoding("UTF-8");
 		String contextPath    = request.getContextPath();
 		String requestPath    = request.getRequestURI();
 		requestPath = requestPath.substring(contextPath.length(), requestPath.length());
@@ -55,7 +61,7 @@ public class MainServlet extends HttpServlet{
 				System.out.println("requestPath"+requestPath+"requestMethod:"+requestMethod);
 				// 创建请求参数对象
 				HashMap<String,Object> parameterMap = new HashMap<String, Object>();
-				Enumeration<String> parameters = request.getAttributeNames();
+				Enumeration<String> parameters = request.getParameterNames();
 				while(parameters.hasMoreElements()) {
 					String key = parameters.nextElement();
 					parameterMap.put(key, request.getParameter(key));
@@ -65,11 +71,15 @@ public class MainServlet extends HttpServlet{
 				if(parameterMap.size() <= 0) {
 					result = handler.getMethod().invoke(obj);
 				}else {
-					result = handler.getMethod().invoke(obj, parameterMap);
+					Param param = new Param(parameterMap);
+					result = handler.getMethod().invoke(obj, param);
 				}
-				if(result instanceof String) {
-					System.out.println(contextPath + result.toString());
-					request.getRequestDispatcher("/WEB-INF/"+result.toString()).forward(request, response);
+				// 处理Action返回值
+				if(result instanceof View) {
+					processView(request, response, contextPath, result);
+				}
+				else if(result instanceof Data) {
+					processJSON(response, result);
 				}
 					
 			} catch (IllegalAccessException e) {
@@ -79,8 +89,49 @@ public class MainServlet extends HttpServlet{
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	/**
+	 * 处理JSON
+	 * @param response
+	 * @param result
+	 * @throws IOException
+	 */
+	private void processJSON(HttpServletResponse response, Object result) throws IOException {
+		Data data = (Data) result;
+		Object model = data.getObject();
+		if(model != null) {
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			PrintWriter writer = response.getWriter();
+			writer.write(JSON.toJSONString(model));
+			writer.flush();
+			writer.close();
+		}
+	}
+	/**
+	 * 处理JSP页面
+	 * @param request
+	 * @param response
+	 * @param contextPath
+	 * @param result
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	private void processView(HttpServletRequest request, HttpServletResponse response, String contextPath,
+			Object result) throws IOException, ServletException {
+		View view = (View) result;
+		String path = view.getPath();
+		if(path.startsWith("/")) {
+			response.sendRedirect(contextPath + path);
 		}else {
-			//request.getRequestDispatcher(requestPath).forward(request, response);
+			Map<String,Object> model = view.getModel();
+			for(Map.Entry<String, Object>entry : model.entrySet()) {
+				request.setAttribute(entry.getKey(), entry.getValue());
+			}
+			request.getRequestDispatcher("/WEB-INF/"+path).forward(request, response);
+			
 		}
 	}
 
@@ -90,13 +141,11 @@ public class MainServlet extends HttpServlet{
 	}
 
 	/**
-	 * 初始化系统中所有标记为Controller的类及其Action方法
+	 * 初始化
 	 */
 	public void init(ServletConfig servletConfig) throws ServletException {
 		 ServletContext servletContext = servletConfig.getServletContext();
-
-	        registerServlet(servletContext);
+		 registerServlet(servletContext);
 	}
-	
 	
 }

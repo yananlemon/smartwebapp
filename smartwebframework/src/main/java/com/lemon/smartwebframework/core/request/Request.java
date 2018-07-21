@@ -1,4 +1,4 @@
-package com.lemon.smartwebframework.core;
+package com.lemon.smartwebframework.core.request;
 
 public class Request {
 	private String requestMethod;	// 请求方法

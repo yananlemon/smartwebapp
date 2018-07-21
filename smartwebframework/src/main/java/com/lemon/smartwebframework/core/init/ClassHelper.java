@@ -1,4 +1,4 @@
-package com.lemon.smartwebframework.core;
+package com.lemon.smartwebframework.core.init;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.lemon.smartwebframework.core.annotation.Controller;
+import com.lemon.smartwebframework.util.PropertiesHelper;
 
 /**
  * 类加载工具类
@@ -19,15 +20,17 @@ public class ClassHelper {
 	
 	private static final Set<Class<?>> CLASS_SET; 
 	
+	private static final String BASE_CONTROLLER_PATH = "smart.framework.controller.package";
+	
 	/**
 	 * 加载web应用中所有类
 	 */
 	static {
-		// 目前只加载指定包下所有类
-		String controllerPackage = "com.lemon.smartwebapp.chapter";
-		Set<Class<?>> sets = new HashSet<Class<?>>();
-		ClassLoader loader = getClassLoader();
 		try {
+			// 目前只加载指定包下所有类
+			String controllerPackage = PropertiesHelper.getProperties().getProperty(BASE_CONTROLLER_PATH);
+			Set<Class<?>> sets = new HashSet<Class<?>>();
+			ClassLoader loader = getClassLoader();
 			// 获取指定名称的所有资源
 			Enumeration<URL> urls = loader.getResources(controllerPackage.replace(".", "/"));
 			
@@ -43,11 +46,12 @@ public class ClassHelper {
 				}
 			}
 			
+			CLASS_SET = sets;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-		CLASS_SET = sets;
 	}
 	
 	static void addClass(Set<Class<?>> sets,String packagePath,String packageName) {
@@ -100,11 +104,4 @@ public class ClassHelper {
 		}
 		return rs;
 	}
-	
-	public static void main(String[] args) {
-		ClassHelper helper = new ClassHelper();
-		System.out.println(helper.CLASS_SET);
-	}
-	
-	
 }
