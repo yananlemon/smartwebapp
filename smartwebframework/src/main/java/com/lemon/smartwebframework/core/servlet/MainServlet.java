@@ -5,7 +5,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.HashMap;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +31,15 @@ public class MainServlet extends HttpServlet{
 	 */
 	private static final long serialVersionUID = -7499357748380204630L;
 
+	private void registerServlet(ServletContext servletContext) {
+        ServletRegistration jspServlet = servletContext.getServletRegistration("jsp");
+        jspServlet.addMapping("/index.jsp");
+        jspServlet.addMapping("/WEB-INF/jsp/*");
+
+        ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
+        defaultServlet.addMapping("/favicon.ico");
+        defaultServlet.addMapping("/WEB-INF/asset*");
+    }	
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// 获取请求方法和请求路径
@@ -57,25 +69,18 @@ public class MainServlet extends HttpServlet{
 				}
 				if(result instanceof String) {
 					System.out.println(contextPath + result.toString());
-					//response.sendRedirect("http://localhost:8080/test1/WEB-INF/jsp/welcome.jsp");
 					request.getRequestDispatcher("/WEB-INF/"+result.toString()).forward(request, response);
-					//request.getRequestDispatcher("http://localhost:8080/test1/WEB-INF/jsp/welcome.jsp").forward(request, response);
 				}
 					
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}else {
-			//response.seth
-			
-			request.getRequestDispatcher(requestPath).forward(request, response);
+			//request.getRequestDispatcher(requestPath).forward(request, response);
 		}
 	}
 
@@ -87,8 +92,10 @@ public class MainServlet extends HttpServlet{
 	/**
 	 * 初始化系统中所有标记为Controller的类及其Action方法
 	 */
-	public void init() throws ServletException {
-		
+	public void init(ServletConfig servletConfig) throws ServletException {
+		 ServletContext servletContext = servletConfig.getServletContext();
+
+	        registerServlet(servletContext);
 	}
 	
 	
