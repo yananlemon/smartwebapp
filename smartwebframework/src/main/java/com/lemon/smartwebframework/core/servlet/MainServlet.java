@@ -18,11 +18,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSON;
 import com.lemon.smartwebframework.core.Handler;
+import com.lemon.smartwebframework.core.init.BeanHelper;
 import com.lemon.smartwebframework.core.init.ControllerHelper;
+import com.lemon.smartwebframework.core.init.SystemInit;
 import com.lemon.smartwebframework.core.request.Data;
 import com.lemon.smartwebframework.core.request.Param;
 import com.lemon.smartwebframework.core.request.View;
-import com.lemon.smartwebframework.util.ReflectionUtil;
 
 /**
  * MainServlet
@@ -66,7 +67,7 @@ public class MainServlet extends HttpServlet{
 					String key = parameters.nextElement();
 					parameterMap.put(key, request.getParameter(key));
 				}
-				Object obj = ReflectionUtil.newInstance(handler.getControllerClass());
+				Object obj = BeanHelper.getBean(handler.getControllerClass());
 				Object result = null;
 				if(parameterMap.size() <= 0) {
 					result = handler.getMethod().invoke(obj);
@@ -146,6 +147,11 @@ public class MainServlet extends HttpServlet{
 	public void init(ServletConfig servletConfig) throws ServletException {
 		 ServletContext servletContext = servletConfig.getServletContext();
 		 registerServlet(servletContext);
+		 SystemInit.init();
+	}
+	
+	public static void main(String[] args) {
+		SystemInit.init();
 	}
 	
 }

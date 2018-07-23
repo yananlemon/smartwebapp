@@ -17,18 +17,23 @@ public class PropertiesHelper {
 	
 	static {
 		
-		try {
 			ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 			InputStream in = classloader.getResourceAsStream(fileName);
 			properties = new Properties();
-			properties.load(in);
-		} catch (IOException e) {
-			throw new RuntimeException("读取"+fileName+"出错");
-		}
+			try {
+				properties.load(in);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 	
 	public static Properties getProperties() {
 		return properties;
+	}
+	
+	public static void main(String[] args) {
+		System.out.println();
 	}
 	
 }

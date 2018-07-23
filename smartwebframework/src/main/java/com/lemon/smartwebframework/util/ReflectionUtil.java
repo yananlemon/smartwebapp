@@ -1,4 +1,7 @@
 package com.lemon.smartwebframework.util;
+
+import java.lang.reflect.Field;
+
 /**
  * 反射工具类
  * @author yanan
@@ -18,6 +21,16 @@ public class ReflectionUtil {
 			e.printStackTrace();
 		}
 		return instance;
+	}
+
+	public static void setField(Object obj, Field f, Object fieldInstance) {
+		try {
+			f.setAccessible(true);
+			f.set(obj, fieldInstance);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 }
