@@ -68,6 +68,9 @@ public class MainServlet extends HttpServlet{
 					String key = parameters.nextElement();
 					parameterMap.put(key, request.getParameter(key));
 				}
+				/**
+				 * 解决线程安全问题，针对每个请求都生成一个新的Controller实例和新的Service实例
+				 */
 				Object obj = BeanHelper.getBean(handler.getControllerClass());
 				IOCHelper.inject(obj);
 				Object result = null;
