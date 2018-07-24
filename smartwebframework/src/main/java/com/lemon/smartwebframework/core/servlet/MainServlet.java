@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSON;
 import com.lemon.smartwebframework.core.Handler;
 import com.lemon.smartwebframework.core.init.BeanHelper;
 import com.lemon.smartwebframework.core.init.ControllerHelper;
+import com.lemon.smartwebframework.core.init.IOCHelper;
 import com.lemon.smartwebframework.core.init.SystemInit;
 import com.lemon.smartwebframework.core.request.Data;
 import com.lemon.smartwebframework.core.request.Param;
@@ -68,6 +69,7 @@ public class MainServlet extends HttpServlet{
 					parameterMap.put(key, request.getParameter(key));
 				}
 				Object obj = BeanHelper.getBean(handler.getControllerClass());
+				IOCHelper.inject(obj);
 				Object result = null;
 				if(parameterMap.size() <= 0) {
 					result = handler.getMethod().invoke(obj);

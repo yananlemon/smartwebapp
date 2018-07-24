@@ -19,7 +19,7 @@ public class IOCHelper {
 	private static final HashMap<Class<?>,Class<?>> SERVICE_MAP = new HashMap<Class<?>,Class<?>>();
 	
 	static{
-		HashMap<Class<?>,Object> beans = BeanHelper.getBeanMap();
+		/*HashMap<Class<?>,Object> beans = BeanHelper.getBeanMap();
 		System.out.println("beans : "+beans);
 		Iterator<Class<?>> it = beans.keySet().iterator();
 		Set<Class<?>> serviceSet = ClassHelper.getAllServiceClass();
@@ -43,8 +43,30 @@ public class IOCHelper {
 					
 				}
 			}
-		}
+		}*/
 		
+	}
+	
+	public static void inject(Object obj){
+		Class<?> cls = obj.getClass();
+		Field[] fs = cls.getDeclaredFields();
+		Set<Class<?>> serviceSet = ClassHelper.getAllServiceClass();
+		for (Field f : fs) {
+			// 如果该字段有Inject标记并且其类型是接口
+			if(f.isAnnotationPresent(Inject.class) && f.getType().isInterface()) {
+				for (Iterator<Class<?>> iterator = serviceSet.iterator(); iterator.hasNext();) {
+					Class<?> serviceClass = iterator.next();
+					System.out.println(f.getType().isAssignableFrom(serviceClass));
+					if(f.getType().isAssignableFrom(serviceClass) && !serviceClass.equals(f.getType())) {
+						Object fieldInstance = ReflectionUtil.newInstance(serviceClass);
+						ReflectionUtil.setField(obj,f,fieldInstance);
+						//System.out.println("依赖注入的实例："+fieldInstance);
+						//System.out.println("依赖注入的实例hashcode："+fieldInstance.hashCode());
+					}
+				}
+				
+			}
+		}
 	}
 	
 	
