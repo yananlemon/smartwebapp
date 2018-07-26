@@ -1,4 +1,4 @@
-package com.lemon.smartwebapp.entity;
+package com.lemon.entity;
 
 public class Customer {
 	

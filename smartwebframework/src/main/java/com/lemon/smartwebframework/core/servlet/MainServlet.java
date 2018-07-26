@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSON;
+import com.lemon.smartwebframework.constants.GlobalConstants;
 import com.lemon.smartwebframework.core.Handler;
 import com.lemon.smartwebframework.core.init.BeanHelper;
 import com.lemon.smartwebframework.core.init.ControllerHelper;
@@ -25,6 +26,7 @@ import com.lemon.smartwebframework.core.init.SystemInit;
 import com.lemon.smartwebframework.core.request.Data;
 import com.lemon.smartwebframework.core.request.Param;
 import com.lemon.smartwebframework.core.request.View;
+import com.lemon.smartwebframework.util.PropertiesHelper;
 
 /**
  * MainServlet
@@ -39,15 +41,28 @@ public class MainServlet extends HttpServlet{
 	 */
 	private static final long serialVersionUID = -7499357748380204630L;
 
+	/**
+	 * 动态注册{@code excludingViewPath}和{@code excludingResourcesPath}
+	 * @param @servletContext
+	 */
 	private void registerServlet(ServletContext servletContext) {
-        ServletRegistration jspServlet = servletContext.getServletRegistration("jsp");
-        jspServlet.addMapping("/index.jsp");
-        jspServlet.addMapping("/WEB-INF/jsp/*");
-
+		
+		// 获取视图路径和静态资料路径
+		String excludingViewPath = PropertiesHelper.getProperties().getProperty(GlobalConstants.PROP_KEY_DEFAULT_VIEW_FOLDER);
+		String excludingResourcesPath = PropertiesHelper.getProperties().getProperty(GlobalConstants.PROP_KEY_DEFAULT_STATIC_FOLDER);
+		if(excludingViewPath == null || excludingViewPath.equals("" )
+				|| excludingResourcesPath == null || excludingResourcesPath.equals("")){
+			String msg = String.format("%s或者%s不能为空。", GlobalConstants.PROP_KEY_DEFAULT_VIEW_FOLDER,GlobalConstants.PROP_KEY_DEFAULT_STATIC_FOLDER);
+			throw new RuntimeException(msg);
+		}
+		// 将这些路径添加到Servlet映射，MainServlet就会排除掉对这些路径的过滤
+		ServletRegistration jspServlet = servletContext.getServletRegistration("jsp");
+        jspServlet.addMapping(excludingViewPath);
         ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
-        defaultServlet.addMapping("/favicon.ico");
-        defaultServlet.addMapping("/WEB-INF/asset*");
-    }	
+        defaultServlet.addMapping(excludingResourcesPath);
+    }
+	
+	
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// 获取请求方法和请求路径
@@ -56,7 +71,10 @@ public class MainServlet extends HttpServlet{
 		String requestPath    = request.getRequestURI();
 		requestPath = requestPath.substring(contextPath.length(), requestPath.length());
 		String requestMethod  = request.getMethod().toLowerCase(); // get,post,put,delete
-		System.out.println("requestPath:"+requestPath);
+		if(!requestMethod.equals("get") || !requestMethod.equals("post")){
+			// 请求类型不支持
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		}
 		Handler handler = ControllerHelper.getHandler(requestPath,requestMethod);
 		if(handler != null) {
 			try {
@@ -72,7 +90,7 @@ public class MainServlet extends HttpServlet{
 				 * 解决线程安全问题，针对每个请求都生成一个新的Controller实例和新的Service实例
 				 */
 				Object obj = BeanHelper.getBean(handler.getControllerClass());
-				IOCHelper.inject(obj);
+				IOCHelper.autoInject(obj);
 				Object result = null;
 				if(parameterMap.size() <= 0) {
 					result = handler.getMethod().invoke(obj);
@@ -95,6 +113,9 @@ public class MainServlet extends HttpServlet{
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 			}
+		}else{
+			// 没有相应的handler处理请求
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}
 	}
 	
@@ -136,7 +157,7 @@ public class MainServlet extends HttpServlet{
 			for(Map.Entry<String, Object>entry : model.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
-			request.getRequestDispatcher("/WEB-INF/"+path).forward(request, response);
+			request.getRequestDispatcher(path).forward(request, response);
 			
 		}
 	}
@@ -153,10 +174,6 @@ public class MainServlet extends HttpServlet{
 		 ServletContext servletContext = servletConfig.getServletContext();
 		 registerServlet(servletContext);
 		 SystemInit.init();
-	}
-	
-	public static void main(String[] args) {
-		SystemInit.init();
 	}
 	
 }

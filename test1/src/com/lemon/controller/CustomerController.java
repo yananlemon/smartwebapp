@@ -3,8 +3,8 @@ package com.lemon.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lemon.entity.Customer;
 import com.lemon.service.ICustomerService;
-import com.lemon.smartwebapp.entity.Customer;
 import com.lemon.smartwebframework.core.annotation.Controller;
 import com.lemon.smartwebframework.core.annotation.Inject;
 import com.lemon.smartwebframework.core.annotation.RequestMapping;

@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.lemon.smartwebframework.constants.GlobalConstants;
 import com.lemon.smartwebframework.core.annotation.Controller;
 import com.lemon.smartwebframework.core.annotation.Service;
 import com.lemon.smartwebframework.util.PropertiesHelper;
@@ -19,31 +20,26 @@ import com.lemon.smartwebframework.util.PropertiesHelper;
  */
 public class ClassHelper {
 	
+	// 存储Controller && Service && Interface包中所有Class对象
 	private static final Set<Class<?>> CLASS_SET; 
 	
-	private static final String BASE_CONTROLLER_PATH = "smart.framework.controller.package";
-	private static final String BASE_SERVICE_PATH = "smart.framework.service.impl.package";
-	private static final String BASE_SERVICE_INTERFACE_PATH = "smart.framework.service.package";
-	
 	/**
-	 * 加载web应用中所有类
+	 * 加载web应用中Controller && Service && Interface
 	 */
 	static {
 		try {
+			
 			// 目前只加载指定包下所有类
-			String controllerPackage = PropertiesHelper.getProperties().getProperty(BASE_CONTROLLER_PATH);
-			String servicePackage = PropertiesHelper.getProperties().getProperty(BASE_SERVICE_PATH);
-			System.out.println(servicePackage);
-			String interfacePackage = PropertiesHelper.getProperties().getProperty(BASE_SERVICE_INTERFACE_PATH);
-			// 动态加载指定目录的service及其接口
+			String controllerPackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_CONTROLLER_PATH);
+			String servicePackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_SERVICE_PATH);
+			String interfacePackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_SERVICE_INTERFACE_PATH);
 			String[] classArray = {controllerPackage,servicePackage,interfacePackage};
 			Set<Class<?>> sets = new HashSet<Class<?>>();
 			ClassLoader loader = getClassLoader();
-			
 			for (int i = 0; i < classArray.length; i++) {
+				
 				// 获取指定名称的所有资源
 				Enumeration<URL> urls = loader.getResources(classArray[i].replace(".", "/"));
-				// 遍历
 				while(urls.hasMoreElements()) {
 					URL url = urls.nextElement();
 					if(url == null)
@@ -54,9 +50,7 @@ public class ClassHelper {
 					}
 				}
 			}
-			
 			CLASS_SET = sets;
-			System.out.println("加载："+CLASS_SET);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {

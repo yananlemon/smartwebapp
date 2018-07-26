@@ -32,8 +32,8 @@ public class PropertiesHelper {
 		return properties;
 	}
 	
-	public static void main(String[] args) {
-		System.out.println();
+	public static String getProperty(String key){
+		return properties.getProperty(key);
 	}
 	
 }

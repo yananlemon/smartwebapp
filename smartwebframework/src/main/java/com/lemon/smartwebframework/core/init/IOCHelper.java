@@ -18,51 +18,30 @@ public class IOCHelper {
 	
 	private static final HashMap<Class<?>,Class<?>> SERVICE_MAP = new HashMap<Class<?>,Class<?>>();
 	
-	static{
-		/*HashMap<Class<?>,Object> beans = BeanHelper.getBeanMap();
-		System.out.println("beans : "+beans);
-		Iterator<Class<?>> it = beans.keySet().iterator();
-		Set<Class<?>> serviceSet = ClassHelper.getAllServiceClass();
-		while(it.hasNext()) {
-			Class<?> cls = it.next();
-			Object obj = beans.get(cls);
-			Field[] fs = cls.getDeclaredFields();
-			for (Field f : fs) {
-				// 如果该字段有Inject标记并且其类型是接口
-				if(f.isAnnotationPresent(Inject.class) && f.getType().isInterface()) {
-					for (Iterator<Class<?>> iterator = serviceSet.iterator(); iterator.hasNext();) {
-						Class<?> serviceClass = iterator.next();
-						System.out.println(f.getType().isAssignableFrom(serviceClass));
-						if(f.getType().isAssignableFrom(serviceClass) && !serviceClass.equals(f.getType())) {
-							Object fieldInstance = ReflectionUtil.newInstance(serviceClass);
-							System.out.println("field type :"+f.getType());
-							ReflectionUtil.setField(obj,f,fieldInstance);
-							System.out.println(obj.toString()+f.getName()+fieldInstance);
-						}
-					}
-					
-				}
-			}
-		}*/
-		
-	}
-	
-	public static void inject(Object obj){
+	/**
+	 * 给指定的{@code obj}对象中有{@link com.lemon.smartwebframework.core.annotation.Inject}注解的字段初始化一个新的实例
+	 * @param obj
+	 */
+	public static void autoInject(Object obj){
 		Class<?> cls = obj.getClass();
 		Field[] fs = cls.getDeclaredFields();
 		Set<Class<?>> serviceSet = ClassHelper.getAllServiceClass();
 		for (Field f : fs) {
 			// 如果该字段有Inject标记并且其类型是接口
 			if(f.isAnnotationPresent(Inject.class) && f.getType().isInterface()) {
+				
+				// 遍历Service类集合，寻找该接口的实现类，如果找到则设置obj中引用该接口的实例字段的值为该实现类的实例
+				boolean notFound = true;
 				for (Iterator<Class<?>> iterator = serviceSet.iterator(); iterator.hasNext();) {
 					Class<?> serviceClass = iterator.next();
-					System.out.println(f.getType().isAssignableFrom(serviceClass));
 					if(f.getType().isAssignableFrom(serviceClass) && !serviceClass.equals(f.getType())) {
 						Object fieldInstance = ReflectionUtil.newInstance(serviceClass);
 						ReflectionUtil.setField(obj,f,fieldInstance);
-						//System.out.println("依赖注入的实例："+fieldInstance);
-						//System.out.println("依赖注入的实例hashcode："+fieldInstance.hashCode());
+						notFound = false;
 					}
+				}
+				if(notFound){
+					throw new RuntimeException("不能实例化"+f.getName());
 				}
 				
 			}
