@@ -3,6 +3,8 @@ package com.lemon.smartwebframework.core.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +13,12 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import com.alibaba.fastjson.JSON;
 import com.lemon.smartwebframework.constants.GlobalConstants;
@@ -27,6 +31,7 @@ import com.lemon.smartwebframework.core.request.Data;
 import com.lemon.smartwebframework.core.request.Param;
 import com.lemon.smartwebframework.core.request.View;
 import com.lemon.smartwebframework.util.PropertiesHelper;
+import com.lemon.smartwebframework.util.ServletContextHelper;
 
 /**
  * MainServlet
@@ -34,6 +39,7 @@ import com.lemon.smartwebframework.util.PropertiesHelper;
  *
  */
 @WebServlet(name = "MainServlet",urlPatterns = "/*",loadOnStartup = 0)
+@MultipartConfig
 public class MainServlet extends HttpServlet{
 
 	/**
@@ -57,9 +63,9 @@ public class MainServlet extends HttpServlet{
 		}
 		// 将这些路径添加到Servlet映射，MainServlet就会排除掉对这些路径的过滤
 		ServletRegistration jspServlet = servletContext.getServletRegistration("jsp");
-        jspServlet.addMapping(excludingViewPath);
+        jspServlet.addMapping(excludingViewPath + "*");
         ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
-        defaultServlet.addMapping(excludingResourcesPath);
+        defaultServlet.addMapping(excludingResourcesPath + "*");
     }
 	
 	
@@ -71,51 +77,72 @@ public class MainServlet extends HttpServlet{
 		String requestPath    = request.getRequestURI();
 		requestPath = requestPath.substring(contextPath.length(), requestPath.length());
 		String requestMethod  = request.getMethod().toLowerCase(); // get,post,put,delete
-		if(!requestMethod.equals("get") || !requestMethod.equals("post")){
+		if(!requestMethod.equals("get") && !requestMethod.equals("post")){
 			// 请求类型不支持
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-		}
-		Handler handler = ControllerHelper.getHandler(requestPath,requestMethod);
-		if(handler != null) {
-			try {
-				System.out.println("requestPath"+requestPath+"requestMethod:"+requestMethod);
-				// 创建请求参数对象
-				HashMap<String,Object> parameterMap = new HashMap<String, Object>();
-				Enumeration<String> parameters = request.getParameterNames();
-				while(parameters.hasMoreElements()) {
-					String key = parameters.nextElement();
-					parameterMap.put(key, request.getParameter(key));
-				}
-				/**
-				 * 解决线程安全问题，针对每个请求都生成一个新的Controller实例和新的Service实例
-				 */
-				Object obj = BeanHelper.getBean(handler.getControllerClass());
-				IOCHelper.autoInject(obj);
-				Object result = null;
-				if(parameterMap.size() <= 0) {
-					result = handler.getMethod().invoke(obj);
-				}else {
-					Param param = new Param(parameterMap);
-					result = handler.getMethod().invoke(obj, param);
-				}
-				// 处理Action返回值
-				if(result instanceof View) {
-					processView(request, response, contextPath, result);
-				}
-				else if(result instanceof Data) {
-					processJSON(response, result);
-				}
-					
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
 		}else{
-			// 没有相应的handler处理请求
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			Handler handler = ControllerHelper.getHandler(requestPath,requestMethod);
+			if(handler != null) {
+				try {
+					System.out.println("requestPath"+requestPath+"requestMethod:"+requestMethod);
+					// 创建请求参数对象
+					HashMap<String,Object> parameterMap = new HashMap<String, Object>();
+					Enumeration<String> parameters = request.getParameterNames();
+					while(parameters.hasMoreElements()) {
+						String key = parameters.nextElement();
+						parameterMap.put(key, request.getParameter(key));
+					}
+					
+					System.out.println(parameterMap.toString());
+					
+					/**
+					 * 解决线程安全问题，针对每个请求都生成一个新的Controller实例和新的Service实例
+					 */
+					Object obj = BeanHelper.getBean(handler.getControllerClass());
+					IOCHelper.autoInject(obj);
+					Object result = null;
+					System.out.println(handler.getMethod().getParameterCount());
+					if(handler.getMethod().getParameterCount() == 0){
+						result = handler.getMethod().invoke(obj);
+					}else{
+						String contentType = request.getContentType();
+						
+						Collection<Part> parts = null;
+						Collection<Part> parts2 = new ArrayList<Part>();
+						// 根据表单enctype类型封装参数
+						if(contentType.toLowerCase().startsWith("multipart")){
+							parts = request.getParts();
+							for (Part part : parts) {
+								if(part.getSubmittedFileName() != null && !part.getSubmittedFileName().equals(""))
+									parts2.add(part);
+									/*System.out.println(part.getSubmittedFileName());
+									System.out.println(part.getSize());*/
+									
+								
+							}
+						}
+						Param param = new Param(parameterMap,parts2);
+						result = handler.getMethod().invoke(obj, param);
+					}
+					// 处理Action返回值
+					if(result instanceof View) {
+						processView(request, response, contextPath, result);
+					}
+					else if(result instanceof Data) {
+						processJSON(response, result);
+					}
+					
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}else{
+				// 没有相应的handler处理请求
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			}
 		}
 	}
 	
@@ -148,6 +175,7 @@ public class MainServlet extends HttpServlet{
 	 */
 	private void processView(HttpServletRequest request, HttpServletResponse response, String contextPath,
 			Object result) throws IOException, ServletException {
+		String basePath = PropertiesHelper.getProperties().getProperty(GlobalConstants.PROP_KEY_DEFAULT_VIEW_FOLDER);
 		View view = (View) result;
 		String path = view.getPath();
 		if(path.startsWith("/")) {
@@ -157,7 +185,7 @@ public class MainServlet extends HttpServlet{
 			for(Map.Entry<String, Object>entry : model.entrySet()) {
 				request.setAttribute(entry.getKey(), entry.getValue());
 			}
-			request.getRequestDispatcher(path).forward(request, response);
+			request.getRequestDispatcher(basePath + path).forward(request, response);
 			
 		}
 	}
@@ -174,6 +202,9 @@ public class MainServlet extends HttpServlet{
 		 ServletContext servletContext = servletConfig.getServletContext();
 		 registerServlet(servletContext);
 		 SystemInit.init();
+		 ServletContextHelper.contextPath = servletContext.getContextPath();
+		 ServletContextHelper.realPath = servletContext.getRealPath("/");
+		 
 	}
 	
 }
