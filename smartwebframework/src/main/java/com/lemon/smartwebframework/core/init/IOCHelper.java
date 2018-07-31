@@ -19,10 +19,12 @@ public class IOCHelper {
 	private static final HashMap<Class<?>,Class<?>> SERVICE_MAP = new HashMap<Class<?>,Class<?>>();
 	
 	/**
-	 * 给指定的{@code obj}对象中有{@link com.lemon.smartwebframework.core.annotation.Inject}注解的字段初始化一个新的实例
+	 * 如果指定的{@code obj}对象中有{@link com.lemon.smartwebframework.core.annotation.Inject}
+	 * 注解的字段则初始化一个新的实例
 	 * @param obj
+	 * @throws Exception 
 	 */
-	public static void autoInject(Object obj){
+	public static void autoInject(Object obj) throws Exception{
 		Class<?> cls = obj.getClass();
 		Field[] fs = cls.getDeclaredFields();
 		Set<Class<?>> serviceSet = ClassHelper.getAllServiceClass();

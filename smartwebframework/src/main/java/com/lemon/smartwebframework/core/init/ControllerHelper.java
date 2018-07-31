@@ -24,6 +24,7 @@ public class ControllerHelper {
 	private static final HashMap<Request,Handler> ACTION_MAP = new HashMap<Request, Handler>();
 	
 	static {
+		
 		// 获取所有Controller类
 		Set<Class<?>> controllerSet = ClassHelper.getAllControllerClass();
 		
@@ -31,11 +32,10 @@ public class ControllerHelper {
 		Iterator<Class<?>> it = controllerSet.iterator();
 		while(it.hasNext()) {
 			Class<?> controllerClass = it.next();
-			// 获取
 			Controller controller = controllerClass.getAnnotation(Controller.class);
 			Method[] methods = controllerClass.getDeclaredMethods();
 			for(Method method : methods) {
-				// 判断当前方法是否有RequetMapping标记
+				// 判断当前方法是否有RequetMapping注解
 				if(method.isAnnotationPresent(RequestMapping.class)) {
 					RequestMapping rm = method.getAnnotation(RequestMapping.class);
 					String path = rm.path();

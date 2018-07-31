@@ -13,15 +13,17 @@ public class ReflectionUtil {
 	 * 根据{@code cls}生成一个新的实例
 	 * @param cls
 	 * @return 指定Class类型的一个新的实例
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
 	 */
-	public static Object newInstance(Class<?> cls) {
+	public static Object newInstance(Class<?> cls) throws InstantiationException, IllegalAccessException {
 		Object instance = null;
 		try {
 			instance = cls.newInstance();
 		} catch (InstantiationException e) {
-			e.printStackTrace();
+			throw e;
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			throw e;
 		}
 		return instance;
 	}
@@ -31,13 +33,14 @@ public class ReflectionUtil {
 	 * @param obj
 	 * @param field
 	 * @param value
+	 * @throws Exception 
 	 */
-	public static void setField(Object obj, Field field, Object value) {
+	public static void setField(Object obj, Field field, Object value) throws Exception {
 		try {
 			field.setAccessible(true);
 			field.set(obj, value);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
+			throw e;
 		}
 	}
 	

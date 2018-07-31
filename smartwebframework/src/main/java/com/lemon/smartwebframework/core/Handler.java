@@ -4,10 +4,9 @@ import java.lang.reflect.Method;
 
 public class Handler {
 
-	/**Controller类对象**/
-	private Class<?> controllerClass;
+	private Class<?> controllerClass;	// Controller类对象
 	
-	private Method method;
+	private Method method;				// Controller类对象中method
 	
 	public Handler(Class<?> controllerClass, Method method) {
 		this.controllerClass = controllerClass;

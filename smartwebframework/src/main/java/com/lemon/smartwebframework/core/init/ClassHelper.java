@@ -58,7 +58,14 @@ public class ClassHelper {
 		}
 	}
 	
-	static void addClass(Set<Class<?>> sets,String packagePath,String packageName) {
+	/**
+	 * 过滤并加载class文件
+	 * @param sets
+	 * @param packagePath
+	 * @param packageName
+	 */
+	private static void addClass(Set<Class<?>> sets,String packagePath,String packageName) {
+		
 		File[] files = new File(packagePath).listFiles(new FileFilter() {
 			
 			public boolean accept(File file) {

@@ -2,7 +2,6 @@ package com.lemon.smartwebframework.core.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -34,7 +33,11 @@ import com.lemon.smartwebframework.util.PropertiesHelper;
 import com.lemon.smartwebframework.util.ServletContextHelper;
 
 /**
- * MainServlet
+ * <code>MainServlet</code>基于Servlet3.1,实现了<code>HttpServlet</code>中下面的方法:
+ * <ul>
+ * 	<li><code>init</code>,对smartframeword框架进行必要的初始化工作.</li>
+ * 	<li><code>service</code>,对客户端请求进行响应,并分发给相应的Controller.</li>
+ * </ul>
  * @author yanan
  *
  */
@@ -78,13 +81,13 @@ public class MainServlet extends HttpServlet{
 		requestPath = requestPath.substring(contextPath.length(), requestPath.length());
 		String requestMethod  = request.getMethod().toLowerCase(); // get,post,put,delete
 		if(!requestMethod.equals("get") && !requestMethod.equals("post")){
-			// 请求类型不支持
+			// 不支持的请求类型目前只支持get post
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		}else{
 			Handler handler = ControllerHelper.getHandler(requestPath,requestMethod);
 			if(handler != null) {
 				try {
-					System.out.println("requestPath"+requestPath+"requestMethod:"+requestMethod);
+					
 					// 创建请求参数对象
 					HashMap<String,Object> parameterMap = new HashMap<String, Object>();
 					Enumeration<String> parameters = request.getParameterNames();
@@ -93,7 +96,6 @@ public class MainServlet extends HttpServlet{
 						parameterMap.put(key, request.getParameter(key));
 					}
 					
-					System.out.println(parameterMap.toString());
 					
 					/**
 					 * 解决线程安全问题，针对每个请求都生成一个新的Controller实例和新的Service实例
@@ -101,29 +103,27 @@ public class MainServlet extends HttpServlet{
 					Object obj = BeanHelper.getBean(handler.getControllerClass());
 					IOCHelper.autoInject(obj);
 					Object result = null;
-					System.out.println(handler.getMethod().getParameterCount());
 					if(handler.getMethod().getParameterCount() == 0){
 						result = handler.getMethod().invoke(obj);
 					}else{
 						String contentType = request.getContentType();
-						
 						Collection<Part> parts = null;
 						Collection<Part> parts2 = new ArrayList<Part>();
+						
 						// 根据表单enctype类型封装参数
 						if(contentType.toLowerCase().startsWith("multipart")){
 							parts = request.getParts();
+						
+							// 遍历表单元素如果存在文件则添加到parts2中
 							for (Part part : parts) {
 								if(part.getSubmittedFileName() != null && !part.getSubmittedFileName().equals(""))
 									parts2.add(part);
-									/*System.out.println(part.getSubmittedFileName());
-									System.out.println(part.getSize());*/
-									
-								
 							}
 						}
 						Param param = new Param(parameterMap,parts2);
 						result = handler.getMethod().invoke(obj, param);
 					}
+					
 					// 处理Action返回值
 					if(result instanceof View) {
 						processView(request, response, contextPath, result);
@@ -132,12 +132,8 @@ public class MainServlet extends HttpServlet{
 						processJSON(response, result);
 					}
 					
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-					e.printStackTrace();
+				} catch (Exception e) {
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
 			}else{
 				// 没有相应的handler处理请求
@@ -201,7 +197,11 @@ public class MainServlet extends HttpServlet{
 	public void init(ServletConfig servletConfig) throws ServletException {
 		 ServletContext servletContext = servletConfig.getServletContext();
 		 registerServlet(servletContext);
-		 SystemInit.init();
+		 try {
+			SystemInit.init();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		 ServletContextHelper.contextPath = servletContext.getContextPath();
 		 ServletContextHelper.realPath = servletContext.getRealPath("/");
 		 
