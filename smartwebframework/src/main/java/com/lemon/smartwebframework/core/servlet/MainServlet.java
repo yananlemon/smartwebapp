@@ -1,7 +1,11 @@
 package com.lemon.smartwebframework.core.servlet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -22,6 +26,7 @@ import javax.servlet.http.Part;
 import com.alibaba.fastjson.JSON;
 import com.lemon.smartwebframework.constants.GlobalConstants;
 import com.lemon.smartwebframework.core.Handler;
+import com.lemon.smartwebframework.core.annotation.RequestBody;
 import com.lemon.smartwebframework.core.init.BeanHelper;
 import com.lemon.smartwebframework.core.init.ControllerHelper;
 import com.lemon.smartwebframework.core.init.IOCHelper;
@@ -46,7 +51,7 @@ import com.lemon.smartwebframework.util.ServletContextHelper;
 public class MainServlet extends HttpServlet{
 
 	/**
-	 * 
+	 * serialVersionUID
 	 */
 	private static final long serialVersionUID = -7499357748380204630L;
 
@@ -88,7 +93,7 @@ public class MainServlet extends HttpServlet{
 			if(handler != null) {
 				try {
 					
-					// 创建请求参数对象
+					// 获取表单参数和URL参数
 					HashMap<String,Object> parameterMap = new HashMap<String, Object>();
 					Enumeration<String> parameters = request.getParameterNames();
 					while(parameters.hasMoreElements()) {
@@ -96,6 +101,12 @@ public class MainServlet extends HttpServlet{
 						parameterMap.put(key, request.getParameter(key));
 					}
 					
+					BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream(),"UTF-8"));
+					StringBuffer body = new StringBuffer();
+					String line = null;
+					while((line = reader.readLine()) != null){
+						body.append(line);
+					}
 					
 					/**
 					 * 解决线程安全问题，针对每个请求都生成一个新的Controller实例和新的Service实例
@@ -110,8 +121,8 @@ public class MainServlet extends HttpServlet{
 						Collection<Part> parts = null;
 						Collection<Part> parts2 = new ArrayList<Part>();
 						
-						// 根据表单enctype类型封装参数
-						if(contentType.toLowerCase().startsWith("multipart")){
+						// 根据表单enctype类型判断是否存在上传文件
+						if(contentType != null && contentType.toLowerCase().startsWith("multipart")){
 							parts = request.getParts();
 						
 							// 遍历表单元素如果存在文件则添加到parts2中
@@ -120,8 +131,26 @@ public class MainServlet extends HttpServlet{
 									parts2.add(part);
 							}
 						}
+						
+						// 处理JSON类型的参数
+						boolean flag = false;
+						Object jsonObj = null;
+						Parameter[] ps = handler.getMethod().getParameters();
+						for (Parameter parameter : ps) {
+							Annotation[] annotations = parameter.getAnnotations();
+							for(Annotation annotation : annotations){
+								if(annotation instanceof RequestBody){
+									jsonObj = JSON.parseObject(body.toString(),parameter.getType());
+									flag = true;
+								}
+									
+							}
+						}
 						Param param = new Param(parameterMap,parts2);
-						result = handler.getMethod().invoke(obj, param);
+						if(flag)
+							result = handler.getMethod().invoke(obj, jsonObj);
+						else
+							result = handler.getMethod().invoke(obj, param);
 					}
 					
 					// 处理Action返回值
@@ -205,6 +234,5 @@ public class MainServlet extends HttpServlet{
 		 ServletContextHelper.contextPath = servletContext.getContextPath();
 		 ServletContextHelper.realPath = servletContext.getRealPath("/");
 		 
-	}
-	
+	}	
 }

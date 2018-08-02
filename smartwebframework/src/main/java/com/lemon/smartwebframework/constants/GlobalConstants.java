@@ -1,6 +1,9 @@
 package com.lemon.smartwebframework.constants;
 
 public class GlobalConstants {
+	
+	/*****smartframework.properties配置文件名称*****/
+	public static final String FRAMEWORK_PROPERTIES_FILENAME 		= "smartframework.properties";
 
 	/*****smartframework.properties配置文件中key*****/
 	
