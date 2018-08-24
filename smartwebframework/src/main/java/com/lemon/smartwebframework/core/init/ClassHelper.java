@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.lemon.smartwebframework.constants.GlobalConstants;
 import com.lemon.smartwebframework.core.annotation.Controller;
+import com.lemon.smartwebframework.core.annotation.DataAccessLayer;
 import com.lemon.smartwebframework.core.annotation.Service;
 import com.lemon.smartwebframework.util.PropertiesHelper;
 
@@ -33,7 +34,8 @@ public class ClassHelper {
 			String controllerPackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_CONTROLLER_PATH);
 			String servicePackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_SERVICE_PATH);
 			String interfacePackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_SERVICE_INTERFACE_PATH);
-			String[] classArray = {controllerPackage,servicePackage,interfacePackage};
+			String ormInterfacePackage = PropertiesHelper.getProperty(GlobalConstants.PROP_KEY_BASE_ORM_INTERFACE_PATH);
+			String[] classArray = {controllerPackage,servicePackage,interfacePackage,ormInterfacePackage};
 			Set<Class<?>> sets = new HashSet<Class<?>>();
 			ClassLoader loader = getClassLoader();
 			for (int i = 0; i < classArray.length; i++) {
@@ -124,6 +126,19 @@ public class ClassHelper {
 		Set<Class<?>> rs = new HashSet<Class<?>>();
 		for(Class<?> c : CLASS_SET) {
 			if(c.isAnnotationPresent(Service.class))
+				rs.add(c);
+		}
+		return rs;
+	}
+	
+	/**
+	 * 获取web应用中所有打过DataAccessLayer标签的类
+	 * @return
+	 */
+	public static Set<Class<?>> getAllDataAccessLayerClass(){
+		Set<Class<?>> rs = new HashSet<Class<?>>();
+		for(Class<?> c : CLASS_SET) {
+			if(c.isAnnotationPresent(DataAccessLayer.class))
 				rs.add(c);
 		}
 		return rs;

@@ -22,4 +22,7 @@ public class GlobalConstants {
 	// 服务类接口包全路径
 	public static final String PROP_KEY_BASE_SERVICE_INTERFACE_PATH = "smart.framework.service.package";
 	
+	// 服务类接口包全路径
+	public static final String PROP_KEY_BASE_ORM_INTERFACE_PATH = "smart.framework.orm.package";
+	
 }

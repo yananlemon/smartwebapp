@@ -76,7 +76,7 @@ public class CustomerController {
 	 */
 	@RequestMapping(method = "get",path = "/preAdd")
 	public View goAddCustomerPage(){
-		View v = new View("jsp/customer_add.jsp");
+		View v = new View("customer_add.jsp");
 		return v;
 	}
 	
@@ -100,6 +100,7 @@ public class CustomerController {
 	 */
 	@RequestMapping(method = "post",path = "/customer_create2")
 	public Data create(@RequestBody Customer c){
+		service.insert(c);
 		Data rs = new Data("successed!");
 		return rs;
 	}

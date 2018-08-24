@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+	<dataSource>
+		<property name="driver" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/smart_webapp" />
+		<property name="username" value="root" />
+		<property name="password" value="abc123" />
+	</dataSource>
+	<mappers>
+		<mapper resource="CustomerMapper.xml" />
+	</mappers>
+</configuration>

@@ -1,11 +1,15 @@
 package com.lemon.smartwebframework.core.init;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
 import com.lemon.smartwebframework.core.annotation.Inject;
+import com.lemon.smartwebframework.plugin.orm.session.ISqlSession;
+import com.lemon.smartwebframework.plugin.orm.session.ISqlSessionFactory;
+import com.lemon.smartwebframework.plugin.orm.session.SqlSessionFactoryBuilder;
 import com.lemon.smartwebframework.util.ReflectionUtil;
 
 /**
@@ -39,6 +43,8 @@ public class IOCHelper {
 					if(f.getType().isAssignableFrom(serviceClass) && !serviceClass.equals(f.getType())) {
 						Object fieldInstance = ReflectionUtil.newInstance(serviceClass);
 						ReflectionUtil.setField(obj,f,fieldInstance);
+						// 实例化Service中需要注入的dao层对象
+						settingsMapperInstance(fieldInstance);
 						notFound = false;
 					}
 				}
@@ -50,6 +56,21 @@ public class IOCHelper {
 		}
 	}
 	
+	private static void settingsMapperInstance(Object obj) throws Exception{
+		Class<?> cls = obj.getClass();
+		Field[] fs = cls.getDeclaredFields();
+		for (Field f : fs) {
+			// 如果该字段有Inject标记并且其类型是接口
+			if(f.isAnnotationPresent(Inject.class) && f.getType().isInterface()) {
+				InputStream	inputStream =  IOCHelper.class.getClassLoader().getResourceAsStream("simulation_mybatis_config.xml");  
+				ISqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);  
+				ISqlSession session = sqlSessionFactory.openSession();  
+				Object value = session.getMapper(f.getType());
+				f.setAccessible(true);
+				f.set(obj, value);
+			}
+		}
+	}
 	
 	
 	public static void main(String[] args) {

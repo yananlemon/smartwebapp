@@ -21,7 +21,7 @@
 <title>客户编辑</title>
 </head>
 <body>
-	<form id="customerForm" class="form-horizontal" method="post" action="customer_create">
+	<form id="customerForm" class="form-horizontal" method="post" action="customer_create2">
 		<div class="form-group">
 		    <label for="name" class="col-sm-2 control-label">姓名</label>
 		    <div class="col-sm-10">

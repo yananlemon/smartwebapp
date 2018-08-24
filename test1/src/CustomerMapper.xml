@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper interfaceFullPath="com.lemon.dao.ICustomerDao">
+	<attributesAndColumnsMap id="EmployeeMap"
+		type="com.lemon.entity.Customer">
+		<mapping attribute="id" column="id" />
+		<mapping attribute="name" column="name" />
+		<mapping attribute="contact" column="contact" />
+		<mapping attribute="telephone" column="telephone" />
+		<mapping attribute="email" column="email" />
+		<mapping attribute="remark" column="remark" />
+	</attributesAndColumnsMap>
+
+	<insert id="insert" parameterType="com.lemon.entity.Customer">
+		insert into TM_EMPLY (NAME,FIRST_NAME,LAST_NAME,SEX,BIRTHDAY)
+		values (#{name},#{firstName},#{lastName},#{sex},#{birthday})
+	</insert>
+	
+	<!-- <update id="update" parameterType="com.lemon.entity.Employee">
+		update TM_EMPLY SET NAME=#{name},FIRST_NAME=#{firstName},LAST_NAME=#{lastName},SEX=#{sex},BIRTHDAY=#{birthday}
+		where EMP_ID=#{employeeId}
+	</update>
+	
+	
+	<delete id="delete">
+		delete from TM_EMPLY where EMP_ID=?
+	</delete> -->
+
+</mapper>
